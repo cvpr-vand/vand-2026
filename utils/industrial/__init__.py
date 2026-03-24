@@ -3,7 +3,7 @@
 
 """Industrial track utilities for MVTec AD 2 workflows."""
 
-from vand.industrial.types import (
+from industrial.types import (
     Category,
     EvaluationResult,
     IndustrialBatch,

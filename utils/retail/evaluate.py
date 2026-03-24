@@ -21,7 +21,7 @@ from sklearn.metrics import (
     roc_curve,
 )
 
-from vand.retail.types import RetailEvalResult
+from retail.types import RetailEvalResult
 
 
 def _load_predictions(predictions: dict[str, float] | str | Path) -> dict[str, float]:
@@ -36,7 +36,9 @@ def _load_predictions(predictions: dict[str, float] | str | Path) -> dict[str, f
     df = pd.read_csv(csv_path)
     expected_columns = ["capture_id", "pred"]
     if list(df.columns) != expected_columns:
-        raise ValueError(f"Invalid CSV columns. Expected {expected_columns}, got {list(df.columns)}")
+        raise ValueError(
+            f"Invalid CSV columns. Expected {expected_columns}, got {list(df.columns)}"
+        )
 
     out: dict[str, float] = {}
     for row in df.itertuples(index=False):
@@ -89,7 +91,7 @@ def evaluate_local(
     preds = _load_predictions(predictions)
 
     root = Path(dataset_root)
-    parquet_path = root / "datasets" / "query-test.parquet"
+    parquet_path = root / "query-test.parquet"
     if not parquet_path.exists():
         raise FileNotFoundError(f"Ground truth parquet not found: {parquet_path}")
 

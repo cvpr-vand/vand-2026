@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Retail track utilities for Kaputt datasets and evaluation."""
 
-from vand.retail.types import (
+from retail.types import (
     RetailBatch,
     RetailEvalResult,
     RetailInferenceBatch,

@@ -23,7 +23,7 @@ import tifffile
 from PIL import Image
 from sklearn.metrics import precision_recall_curve
 
-from vand.industrial.types import Category, EvaluationResult
+from industrial.types import Category, EvaluationResult
 
 
 def compute_seg_f1(anomaly_map: Any, gt_mask: Any) -> float:
@@ -51,7 +51,12 @@ def _resolve_prediction_path(predictions_dir: Path, category: str, stem: str) ->
     """Resolve prediction TIFF path across allowed directory layouts."""
 
     candidates = [
-        predictions_dir / "anomaly_images" / category / "test_public" / "bad" / f"{stem}.tiff",
+        predictions_dir
+        / "anomaly_images"
+        / category
+        / "test_public"
+        / "bad"
+        / f"{stem}.tiff",
         predictions_dir / "anomaly_images" / category / "test_public" / f"{stem}.tiff",
         predictions_dir / category / "test_public" / "bad" / f"{stem}.tiff",
         predictions_dir / category / "test_public" / f"{stem}.tiff",
@@ -60,14 +65,17 @@ def _resolve_prediction_path(predictions_dir: Path, category: str, stem: str) ->
         if candidate.exists():
             return candidate
     raise FileNotFoundError(
-        f"Missing anomaly map for '{category}/{stem}'. Checked: " + ", ".join(str(path) for path in candidates)
+        f"Missing anomaly map for '{category}/{stem}'. Checked: "
+        + ", ".join(str(path) for path in candidates)
     )
 
 
 def _print_summary(category_scores: dict[str, float], mean_seg_f1: float) -> None:
     """Print an ASCII summary table of category and mean SegF1."""
 
-    category_width = max(len("Category"), *(len(category) for category in category_scores))
+    category_width = max(
+        len("Category"), *(len(category) for category in category_scores)
+    )
     score_width = len("SegF1")
     border = f"+-{'-' * category_width}-+-{'-' * score_width}-+"
     print(border)
@@ -104,7 +112,9 @@ def evaluate_local(
 
     pred_root = Path(predictions_dir)
     data_root = Path(dataset_root)
-    selected = [Category(c) for c in categories] if categories is not None else list(Category)
+    selected = (
+        [Category(c) for c in categories] if categories is not None else list(Category)
+    )
 
     per_category: dict[str, float] = {}
     per_image: dict[str, dict[str, float]] = {}
@@ -135,7 +145,9 @@ def evaluate_local(
             image_scores[image_stem] = f1
 
         if len(image_scores) == 0:
-            raise ValueError(f"No evaluable public bad samples found for category '{category}'")
+            raise ValueError(
+                f"No evaluable public bad samples found for category '{category}'"
+            )
 
         score = float(np.mean(np.fromiter(image_scores.values(), dtype=np.float32)))
         per_category[category] = score

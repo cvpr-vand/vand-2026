@@ -16,7 +16,7 @@ from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 
-from vand.industrial.types import Category, IndustrialBatch, IndustrialSample, Split
+from industrial.types import Category, IndustrialBatch, IndustrialSample, Split
 
 
 @dataclass(frozen=True)
@@ -53,7 +53,9 @@ class MVTecAD2Dataset(Dataset):
         self.category = Category(category)
         self.split = Split(split)
         if transform is None:
-            self.transform = transforms.Compose([transforms.Resize((256, 256)), transforms.ToTensor()])
+            self.transform = transforms.Compose(
+                [transforms.Resize((256, 256)), transforms.ToTensor()]
+            )
         else:
             self.transform = transform
 
@@ -63,7 +65,9 @@ class MVTecAD2Dataset(Dataset):
 
         self.samples = self._build_samples()
         if len(self.samples) == 0:
-            raise FileNotFoundError(f"No PNG files found for category='{self.category}' split='{self.split}'")
+            raise FileNotFoundError(
+                f"No PNG files found for category='{self.category}' split='{self.split}'"
+            )
 
     def _glob_pngs(self, directory: Path) -> list[Path]:
         """Return sorted PNG file paths in a directory."""
@@ -78,7 +82,10 @@ class MVTecAD2Dataset(Dataset):
         split_dir = self.category_dir / self.split
 
         if self.split in {Split.TRAIN, Split.VALIDATION}:
-            return [_Sample(image_path=path, label=0, mask_path=None) for path in self._glob_pngs(split_dir / "good")]
+            return [
+                _Sample(image_path=path, label=0, mask_path=None)
+                for path in self._glob_pngs(split_dir / "good")
+            ]
 
         if self.split == Split.TEST_PUBLIC:
             good_paths = self._glob_pngs(split_dir / "good")
@@ -98,7 +105,10 @@ class MVTecAD2Dataset(Dataset):
                 )
             return samples
 
-        return [_Sample(image_path=path, label=-1, mask_path=None) for path in self._glob_pngs(split_dir)]
+        return [
+            _Sample(image_path=path, label=-1, mask_path=None)
+            for path in self._glob_pngs(split_dir)
+        ]
 
     def __len__(self) -> int:
         """Return the number of samples in this dataset."""
@@ -120,7 +130,9 @@ class MVTecAD2Dataset(Dataset):
         if path is None or not path.exists():
             return None
         mask = Image.open(path).convert("L")
-        resize = transforms.Resize((h, w), interpolation=transforms.InterpolationMode.NEAREST)
+        resize = transforms.Resize(
+            (h, w), interpolation=transforms.InterpolationMode.NEAREST
+        )
         mask = resize(mask)
         mask_tensor = transforms.ToTensor()(mask)
         return (mask_tensor > 0.5).to(torch.float32)
@@ -156,7 +168,9 @@ def _collate_batch(items: list[IndustrialSample]) -> IndustrialBatch:
     labels = torch.tensor([item.label for item in items], dtype=torch.int64)
     masks_raw = [item.mask for item in items]
     if all(m is not None for m in masks_raw):
-        mask: torch.Tensor | list[torch.Tensor | None] = torch.stack([m for m in masks_raw if m is not None], dim=0)
+        mask: torch.Tensor | list[torch.Tensor | None] = torch.stack(
+            [m for m in masks_raw if m is not None], dim=0
+        )
     else:
         mask = masks_raw
     return IndustrialBatch(
@@ -192,7 +206,9 @@ def get_dataloader(
     """
 
     split = Split(split)
-    dataset = MVTecAD2Dataset(root=root, category=category, split=split, transform=transform)
+    dataset = MVTecAD2Dataset(
+        root=root, category=category, split=split, transform=transform
+    )
     return DataLoader(
         dataset,
         batch_size=batch_size,

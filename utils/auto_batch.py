@@ -1,24 +1,15 @@
 # Copyright (C) 2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-"""Shared utilities for the VAND 4.0 Challenge framework."""
+"""Auto batch size decorator"""
 
 from __future__ import annotations
 
 import functools
-import logging
 from collections.abc import Callable
 from typing import Any, TypeVar
 
 import torch
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-
-logger = logging.getLogger("vand")
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -49,11 +40,15 @@ def auto_batch_size(
                     result = fn(*args, batch_size=bs, **kwargs)
                     return result, bs
                 except torch.cuda.OutOfMemoryError:
-                    logger.warning("OOM with batch_size=%d, retrying with %d", bs, bs // 2)
+                    logger.warning(
+                        "OOM with batch_size=%d, retrying with %d", bs, bs // 2
+                    )
                     torch.cuda.empty_cache()
                     bs //= 2
 
-            raise RuntimeError(f"Could not fit even batch_size={min_batch_size} in GPU memory.")
+            raise RuntimeError(
+                f"Could not fit even batch_size={min_batch_size} in GPU memory."
+            )
 
         return wrapper  # type: ignore[return-value]
 

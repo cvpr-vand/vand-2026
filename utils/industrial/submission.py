@@ -16,7 +16,7 @@ import numpy as np
 import tifffile
 from PIL import Image
 
-from vand.industrial.types import Category, Split
+from industrial.types import Category, Split
 
 EXPECTED_COUNTS: dict[Category, int] = {
     Category.CAN: 321,
@@ -48,25 +48,35 @@ def _validate_names(paths: list[Path], split: Split, category: Category) -> None
         suffix = match.group(2)
         expected_suffix = "regular" if split == Split.TEST_PRIVATE else "mixed"
         if suffix != expected_suffix:
-            raise ValueError(f"Invalid suffix in '{path.name}' for {category}/{split}; expected _{expected_suffix}")
+            raise ValueError(
+                f"Invalid suffix in '{path.name}' for {category}/{split}; expected _{expected_suffix}"
+            )
         seen.add(idx)
     expected_count = EXPECTED_COUNTS[category]
     expected_indices = set(range(1, expected_count + 1))
     if seen != expected_indices:
         missing = sorted(expected_indices - seen)
         extra = sorted(seen - expected_indices)
-        raise ValueError(f"Unexpected index set for {category}/{split}; missing={missing[:5]} extra={extra[:5]}")
+        raise ValueError(
+            f"Unexpected index set for {category}/{split}; missing={missing[:5]} extra={extra[:5]}"
+        )
 
 
-def _validate_float16_tiffs(paths: list[Path], category: Category, split: Split) -> None:
+def _validate_float16_tiffs(
+    paths: list[Path], category: Category, split: Split
+) -> None:
     """Validate TIFF files are single-channel 2D float16 images."""
 
     for path in paths:
         arr = np.asarray(tifffile.imread(path))
         if arr.ndim != 2:
-            raise ValueError(f"TIFF must be single-channel 2D in {category}/{split}: {path.name}")
+            raise ValueError(
+                f"TIFF must be single-channel 2D in {category}/{split}: {path.name}"
+            )
         if arr.dtype != np.float16:
-            raise ValueError(f"TIFF must be float16 in {category}/{split}: {path.name}, got {arr.dtype}")
+            raise ValueError(
+                f"TIFF must be float16 in {category}/{split}: {path.name}, got {arr.dtype}"
+            )
 
 
 def _validate_binary_pngs(paths: list[Path], category: Category, split: Split) -> None:
@@ -75,11 +85,15 @@ def _validate_binary_pngs(paths: list[Path], category: Category, split: Split) -
     for path in paths:
         arr = np.asarray(Image.open(path))
         if arr.ndim != 2:
-            raise ValueError(f"PNG must be single-channel 2D in {category}/{split}: {path.name}")
+            raise ValueError(
+                f"PNG must be single-channel 2D in {category}/{split}: {path.name}"
+            )
         unique = np.unique(arr)
         allowed = {0, 255}
         if not set(int(v) for v in unique).issubset(allowed):
-            raise ValueError(f"PNG must only contain values 0 or 255 in {category}/{split}: {path.name}")
+            raise ValueError(
+                f"PNG must only contain values 0 or 255 in {category}/{split}: {path.name}"
+            )
 
 
 def validate_submission(submission_dir: str | Path) -> bool:
@@ -117,13 +131,21 @@ def validate_submission(submission_dir: str | Path) -> bool:
             if not threshold_dir.exists():
                 raise FileNotFoundError(f"Missing directory: {threshold_dir}")
 
-            tiff_paths = sorted(path for path in anomaly_dir.glob("*.tiff") if path.is_file())
-            png_paths = sorted(path for path in threshold_dir.glob("*.png") if path.is_file())
+            tiff_paths = sorted(
+                path for path in anomaly_dir.glob("*.tiff") if path.is_file()
+            )
+            png_paths = sorted(
+                path for path in threshold_dir.glob("*.png") if path.is_file()
+            )
 
             if len(tiff_paths) != expected_count:
-                raise ValueError(f"Expected {expected_count} TIFF files in {anomaly_dir}, found {len(tiff_paths)}")
+                raise ValueError(
+                    f"Expected {expected_count} TIFF files in {anomaly_dir}, found {len(tiff_paths)}"
+                )
             if len(png_paths) != expected_count:
-                raise ValueError(f"Expected {expected_count} PNG files in {threshold_dir}, found {len(png_paths)}")
+                raise ValueError(
+                    f"Expected {expected_count} PNG files in {threshold_dir}, found {len(png_paths)}"
+                )
 
             _validate_names(tiff_paths, split, category)
             _validate_names(png_paths, split, category)
@@ -153,7 +175,9 @@ def prepare_submission(
 
     root = Path(submission_dir)
     validate_submission(root)
-    archive_path = Path(output_path) if output_path is not None else root.with_suffix(".tar.gz")
+    archive_path = (
+        Path(output_path) if output_path is not None else root.with_suffix(".tar.gz")
+    )
     if archive_path.suffixes[-2:] != [".tar", ".gz"]:
         archive_path = archive_path.with_suffix(".tar.gz")
     archive_path.parent.mkdir(parents=True, exist_ok=True)
