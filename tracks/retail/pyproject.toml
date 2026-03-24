@@ -1,0 +1,21 @@
+[project]
+name = "vand-retail"
+version = "0.1.0"
+description = "VAND 4.0 Retail Track — Your submission"
+requires-python = ">=3.11"
+dependencies = ["vand"]
+
+[project.scripts]
+train-retail = "retail.train:main"
+test-retail = "retail.test:main"
+submit-retail = "retail.submit:main"
+
+[tool.uv.sources]
+vand = { workspace = true }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/retail"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
