@@ -10,5 +10,5 @@ repos:
     rev: v1.14.1
     hooks:
       - id: mypy
-        additional_dependencies: [torch-stubs, types-tqdm, types-Pillow]
+        additional_dependencies: [types-tqdm, types-Pillow]
         args: [--ignore-missing-imports]

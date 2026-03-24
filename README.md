@@ -103,8 +103,9 @@ The metric computation utilities in this repository (`vand.industrial.evaluate` 
 
 Read the full challenge rules before submitting:
 
-- [Industrial Track Rules](INDUSTRIAL_TRACK_RULES.md)
-- [Retail Track Rules](RETAIL_TRACK_RULES.md)
+> [!CAUITION]
+> ADD RULES
+
 
 ## License
 

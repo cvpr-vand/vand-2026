@@ -32,7 +32,7 @@ EXPECTED_COUNTS: dict[Category, int] = {
 SUBMISSION_SPLITS: tuple[Split, Split] = (Split.TEST_PRIVATE, Split.TEST_PRIVATE_MIXED)
 
 
-def _validate_names(paths: list[Path], split: str, category: str) -> None:
+def _validate_names(paths: list[Path], split: Split, category: Category) -> None:
     """Validate file naming pattern and index coverage for a split."""
 
     pattern = re.compile(r"^(\d{3})_(regular|mixed)$")
@@ -58,7 +58,7 @@ def _validate_names(paths: list[Path], split: str, category: str) -> None:
         raise ValueError(f"Unexpected index set for {category}/{split}; missing={missing[:5]} extra={extra[:5]}")
 
 
-def _validate_float16_tiffs(paths: list[Path], category: str, split: str) -> None:
+def _validate_float16_tiffs(paths: list[Path], category: Category, split: Split) -> None:
     """Validate TIFF files are single-channel 2D float16 images."""
 
     for path in paths:
@@ -69,7 +69,7 @@ def _validate_float16_tiffs(paths: list[Path], category: str, split: str) -> Non
             raise ValueError(f"TIFF must be float16 in {category}/{split}: {path.name}, got {arr.dtype}")
 
 
-def _validate_binary_pngs(paths: list[Path], category: str, split: str) -> None:
+def _validate_binary_pngs(paths: list[Path], category: Category, split: Split) -> None:
     """Validate PNG files are single-channel images with values {0, 255}."""
 
     for path in paths:
