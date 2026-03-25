@@ -2,14 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 """Submission file generation and validation utilities."""
 
-from __future__ import annotations
-
 import csv
 import zipfile
 from pathlib import Path
 
 
-def generate_csv(predictions: dict[str, float], output_path: str | Path = "predictions.csv") -> Path:
+def generate_csv(
+    predictions: dict[str, float], output_path: str | Path = "predictions.csv"
+) -> Path:
     """Write prediction scores to the Codabench CSV format.
 
     Args:
@@ -31,7 +31,9 @@ def generate_csv(predictions: dict[str, float], output_path: str | Path = "predi
             raise ValueError("Invalid capture_id in predictions: empty value")
         score_value = float(score)
         if not (0.0 <= score_value <= 1.0):
-            raise ValueError(f"Invalid prediction score for capture_id={capture_id}: {score_value}. Expected [0, 1].")
+            raise ValueError(
+                f"Invalid prediction score for capture_id={capture_id}: {score_value}. Expected [0, 1]."
+            )
         rows.append((str(capture_id), score_value))
 
     with output.open("w", newline="", encoding="utf-8") as f:
@@ -64,7 +66,9 @@ def validate_csv(csv_path: str | Path) -> bool:
         try:
             header = next(reader)
         except StopIteration as exc:
-            raise ValueError("CSV is empty. Expected header and prediction rows.") from exc
+            raise ValueError(
+                "CSV is empty. Expected header and prediction rows."
+            ) from exc
 
         if len(header) != 2 or header[0] != "capture_id" or header[1] != "pred":
             raise ValueError("Invalid CSV header. Expected exactly: capture_id,pred")
@@ -72,16 +76,22 @@ def validate_csv(csv_path: str | Path) -> bool:
         count = 0
         for i, row in enumerate(reader, start=2):
             if len(row) != 2:
-                raise ValueError(f"Invalid row format at line {i}. Expected 2 columns, got {len(row)}.")
+                raise ValueError(
+                    f"Invalid row format at line {i}. Expected 2 columns, got {len(row)}."
+                )
             capture_id, pred_text = row
             if not capture_id.strip():
                 raise ValueError(f"Empty capture_id at line {i}.")
             try:
                 pred_value = float(pred_text)
             except ValueError as exc:
-                raise ValueError(f"Non-numeric pred value at line {i}: {pred_text!r}") from exc
+                raise ValueError(
+                    f"Non-numeric pred value at line {i}: {pred_text!r}"
+                ) from exc
             if not (0.0 <= pred_value <= 1.0):
-                raise ValueError(f"Pred out of range at line {i}: {pred_value}. Expected [0, 1].")
+                raise ValueError(
+                    f"Pred out of range at line {i}: {pred_value}. Expected [0, 1]."
+                )
             count += 1
 
     print(f"CSV validation successful. Number of predictions: {count}")

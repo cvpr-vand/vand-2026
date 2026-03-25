@@ -1,7 +1,5 @@
 """Submission packaging entrypoint for retail track predictions."""
 
-from __future__ import annotations
-
 
 def main() -> None:
     """Validate prediction CSV and create submission zip.

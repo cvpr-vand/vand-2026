@@ -13,8 +13,6 @@ Note:
     derived from the local evaluation results.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any
 

@@ -7,8 +7,6 @@ Aligned with the official Kaputt reference loader: parquet files live at
 image paths stored in parquet columns are resolved relative to ``root``.
 """
 
-from __future__ import annotations
-
 from pathlib import Path
 from typing import Any
 
@@ -32,7 +30,9 @@ def _default_transform(image_size: tuple[int, int] = (224, 224)) -> Any:
     return transforms.Compose([transforms.Resize(image_size), transforms.ToTensor()])
 
 
-def _pad_tensor(tensor: torch.Tensor, target_size: int, pad_value: float = 0) -> torch.Tensor:
+def _pad_tensor(
+    tensor: torch.Tensor, target_size: int, pad_value: float = 0
+) -> torch.Tensor:
     """Pad or truncate the first dimension of *tensor* to *target_size*.
 
     Matches the official Kaputt reference ``pad_tensor`` implementation.
@@ -104,17 +104,36 @@ class KaputtDataset(Dataset):
         ref_rows = self.reference_data[
             self.reference_data.item_identifier == query_row.item_identifier
         ]
-        ref_images = [Image.open(self.root / row.reference_image) for _, row in ref_rows.iterrows()]
-        ref_crops = [Image.open(self.root / row.reference_crop) for _, row in ref_rows.iterrows()]
-        ref_masks = [Image.open(self.root / row.reference_mask) for _, row in ref_rows.iterrows()]
+        ref_images = [
+            Image.open(self.root / row.reference_image)
+            for _, row in ref_rows.iterrows()
+        ]
+        ref_crops = [
+            Image.open(self.root / row.reference_crop) for _, row in ref_rows.iterrows()
+        ]
+        ref_masks = [
+            Image.open(self.root / row.reference_mask) for _, row in ref_rows.iterrows()
+        ]
 
         # Apply transforms
         query_image_t = self.transform(query_image)
         query_crop_t = self.transform(query_crop)
         query_mask_t = self.transform(query_mask)
-        ref_image_t = torch.stack([self.transform(img) for img in ref_images]) if ref_images else torch.empty(0)
-        ref_crop_t = torch.stack([self.transform(c) for c in ref_crops]) if ref_crops else torch.empty(0)
-        ref_mask_t = torch.stack([self.transform(m) for m in ref_masks]) if ref_masks else torch.empty(0)
+        ref_image_t = (
+            torch.stack([self.transform(img) for img in ref_images])
+            if ref_images
+            else torch.empty(0)
+        )
+        ref_crop_t = (
+            torch.stack([self.transform(c) for c in ref_crops])
+            if ref_crops
+            else torch.empty(0)
+        )
+        ref_mask_t = (
+            torch.stack([self.transform(m) for m in ref_masks])
+            if ref_masks
+            else torch.empty(0)
+        )
 
         # Pad reference tensors to max_references
         ref_image_t = _pad_tensor(ref_image_t, self.max_references)
@@ -189,16 +208,35 @@ class Kaputt2Dataset(Dataset):
         ref_rows = self.reference_data[
             self.reference_data.item_identifier == query_row.item_identifier
         ]
-        ref_images = [Image.open(self.root / row.reference_image) for _, row in ref_rows.iterrows()]
-        ref_crops = [Image.open(self.root / row.reference_crop) for _, row in ref_rows.iterrows()]
-        ref_masks = [Image.open(self.root / row.reference_mask) for _, row in ref_rows.iterrows()]
+        ref_images = [
+            Image.open(self.root / row.reference_image)
+            for _, row in ref_rows.iterrows()
+        ]
+        ref_crops = [
+            Image.open(self.root / row.reference_crop) for _, row in ref_rows.iterrows()
+        ]
+        ref_masks = [
+            Image.open(self.root / row.reference_mask) for _, row in ref_rows.iterrows()
+        ]
 
         query_image_t = self.transform(query_image)
         query_crop_t = self.transform(query_crop)
         query_mask_t = self.transform(query_mask)
-        ref_image_t = torch.stack([self.transform(img) for img in ref_images]) if ref_images else torch.empty(0)
-        ref_crop_t = torch.stack([self.transform(c) for c in ref_crops]) if ref_crops else torch.empty(0)
-        ref_mask_t = torch.stack([self.transform(m) for m in ref_masks]) if ref_masks else torch.empty(0)
+        ref_image_t = (
+            torch.stack([self.transform(img) for img in ref_images])
+            if ref_images
+            else torch.empty(0)
+        )
+        ref_crop_t = (
+            torch.stack([self.transform(c) for c in ref_crops])
+            if ref_crops
+            else torch.empty(0)
+        )
+        ref_mask_t = (
+            torch.stack([self.transform(m) for m in ref_masks])
+            if ref_masks
+            else torch.empty(0)
+        )
 
         ref_image_t = _pad_tensor(ref_image_t, self.max_references)
         ref_crop_t = _pad_tensor(ref_crop_t, self.max_references)
@@ -234,7 +272,9 @@ def _collate_retail_batch(items: list[RetailSample]) -> RetailBatch:
     )
 
 
-def _collate_inference_batch(items: list[RetailInferenceSample]) -> RetailInferenceBatch:
+def _collate_inference_batch(
+    items: list[RetailInferenceSample],
+) -> RetailInferenceBatch:
     """Collate retail inference samples into a mini-batch."""
     return RetailInferenceBatch(
         query_image=torch.stack([s.query_image for s in items]),

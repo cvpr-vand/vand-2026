@@ -3,8 +3,6 @@
 
 """Enums and data containers for the industrial track."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import StrEnum
 

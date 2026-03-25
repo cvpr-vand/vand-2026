@@ -6,8 +6,6 @@
 
 """Submission validation and packaging utilities for the industrial track."""
 
-from __future__ import annotations
-
 import re
 import tarfile
 from pathlib import Path
