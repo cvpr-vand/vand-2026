@@ -1,7 +1,8 @@
 # Industrial Track — MVTec AD 2
 
 Pixel-level anomaly segmentation on the [MVTec AD 2](https://www.mvtec.com/research-teaching/datasets/mvtec-ad-2) dataset.
-If needed, Code Utils for Development are also available for download there. 
+
+Official and tested Code Utils for Development are also available for download there if needed.
 
 ## What You Need to Do
 
