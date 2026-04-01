@@ -64,7 +64,7 @@ def validate_csv(csv_path: str | Path) -> bool:
     if not path.exists():
         raise FileNotFoundError(f"Predictions CSV not found: {path}")
 
-    with path.open("r", newline="", encoding="utf-8") as f:
+    with path.open("r", newline="", encoding="utf-8-sig") as f:
         reader = csv.reader(f)
         try:
             header = next(reader)
@@ -116,12 +116,12 @@ def _load_ground_truth_ids(path: Path) -> set[str]:
     """
     if not path.is_file():
         raise FileNotFoundError(f"Ground truth file not found: {path}")
-    df = pd.read_parquet(path)
+    df = pd.read_parquet(path, columns=["capture_id"])
     if "capture_id" not in df.columns:
         raise ValueError(
             f"Ground truth file missing 'capture_id' column: {path}"
         )
-    return set(df["capture_id"].unique())
+    return set(df["capture_id"].astype(str).unique())
 
 
 def validate_submission_zip(
@@ -178,7 +178,7 @@ def validate_submission_zip(
 
     # 3. Decode UTF-8
     try:
-        csv_text = raw.decode("utf-8")
+        csv_text = raw.decode("utf-8-sig")
     except UnicodeDecodeError as exc:
         raise ValueError("CSV is not valid UTF-8.") from exc
 
@@ -221,12 +221,20 @@ def validate_submission_zip(
     out_of_range_lines: list[int] = []
 
     for i, row in enumerate(rows, start=2):  # line 2 = first data row
-        cid = row.get("capture_id", "").strip()
+        # DictReader sets missing fields to None and uses None as key for
+        # extra fields.  Reject malformed rows before accessing values.
+        if None in row or None in row.values():
+            raise ValueError(
+                f"Row {i} has the wrong number of fields "
+                f"(expected {len(columns)})."
+            )
+
+        cid = (row.get("capture_id") or "").strip()
         if not cid:
             raise ValueError(f"Empty capture_id at row {i}.")
         capture_ids.append(cid)
 
-        pred = row.get("pred", "").strip()
+        pred = (row.get("pred") or "").strip()
         if not pred:
             bad_pred_lines.append(i)
             continue
