@@ -3,7 +3,7 @@ name = "vand-industrial"
 version = "0.1.0"
 description = "VAND 4.0 Industrial Track — Your submission"
 requires-python = ">=3.11"
-dependencies = ["vand"]
+dependencies = ["vand-utils"]
 
 [project.scripts]
 train-industrial = "industrial.train:main"
@@ -11,7 +11,7 @@ test-industrial = "industrial.test:main"
 submit-industrial = "industrial.submit:main"
 
 [tool.uv.sources]
-vand = { workspace = true }
+vand-utils = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

@@ -7,16 +7,37 @@ Official and tested Code Utils for Development are also available for download t
 ## What You Need to Do
 
 1. **Implement your model** in `src/industrial/model.py`
-2. **Implement training, inference, and submission** in `src/industrial/train.py`, `src/industrial/test.py`, and `src/industrial/submit.py`.
+2. **Implement training, inference, and submission** in `src/industrial/train.py`, `src/industrial/test.py`, and `src/industrial/submit.py`
 3. **Make your final model weights available** in accordance with the official rules to ensure reproducibility and to be eligible for prizes.
 
+## Installation
+
+From the repository root:
+
+```bash
+uv sync --all-packages
+```
+
+## End-to-End Example
+
+```bash
+# 1. Train your model
+uv run train-industrial
+
+# 2. Run inference — generate prediction maps in output/
+uv run test-industrial
+
+# 3. Validate and package predictions into a submission archive
+uv run submit-industrial
+```
+
+Upload the resulting `submission.tar.gz` to [benchmark.mvtec.com](https://benchmark.mvtec.com/).
 
 ## Dataset
 
 8 categories: `can`, `fabric`, `fruit_jelly`, `rice`, `sheet_metal`, `vial`, `wallplugs`, `walnuts`
 
 Splits: `train`, `validation`, `test_public`, `test_private`, `test_private_mixed`
-
 
 ## Submission Format
 
@@ -40,8 +61,6 @@ anomaly_images_thresholded/
       001_mixed.png
       ...
 ```
-
-Upload to [benchmark.mvtec.com](https://benchmark.mvtec.com/).
 
 ## Evaluation
 
