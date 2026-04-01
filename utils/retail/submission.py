@@ -118,9 +118,7 @@ def _load_ground_truth_ids(path: Path) -> set[str]:
         raise FileNotFoundError(f"Ground truth file not found: {path}")
     df = pd.read_parquet(path, columns=["capture_id"])
     if "capture_id" not in df.columns:
-        raise ValueError(
-            f"Ground truth file missing 'capture_id' column: {path}"
-        )
+        raise ValueError(f"Ground truth file missing 'capture_id' column: {path}")
     return set(df["capture_id"].astype(str).unique())
 
 
@@ -210,12 +208,6 @@ def validate_submission_zip(
 
     gt_ids = _load_ground_truth_ids(gt_file)
 
-    if len(rows) > len(gt_ids):
-        raise ValueError(
-            f"CSV has {len(rows)} rows — max allowed is {len(gt_ids)} "
-            f"(unique capture_ids in ground truth)."
-        )
-
     capture_ids: list[str] = []
     bad_pred_lines: list[int] = []
     out_of_range_lines: list[int] = []
@@ -225,8 +217,7 @@ def validate_submission_zip(
         # extra fields.  Reject malformed rows before accessing values.
         if None in row or None in row.values():
             raise ValueError(
-                f"Row {i} has the wrong number of fields "
-                f"(expected {len(columns)})."
+                f"Row {i} has the wrong number of fields (expected {len(columns)})."
             )
 
         cid = (row.get("capture_id") or "").strip()
@@ -247,14 +238,20 @@ def validate_submission_zip(
 
     if bad_pred_lines:
         sample = bad_pred_lines[:5]
-        suffix = f" (and {len(bad_pred_lines) - 5} more)" if len(bad_pred_lines) > 5 else ""
+        suffix = (
+            f" (and {len(bad_pred_lines) - 5} more)" if len(bad_pred_lines) > 5 else ""
+        )
         raise ValueError(
             f"Non-numeric or empty 'pred' values on lines: {sample}{suffix}"
         )
 
     if out_of_range_lines:
         sample = out_of_range_lines[:5]
-        suffix = f" (and {len(out_of_range_lines) - 5} more)" if len(out_of_range_lines) > 5 else ""
+        suffix = (
+            f" (and {len(out_of_range_lines) - 5} more)"
+            if len(out_of_range_lines) > 5
+            else ""
+        )
         raise ValueError(
             f"'pred' values outside [0, 1] range on lines: {sample}{suffix}"
         )
@@ -271,19 +268,24 @@ def validate_submission_zip(
         suffix = f" (and {len(dupes) - 3} more)" if len(dupes) > 3 else ""
         raise ValueError(f"Duplicate capture_ids found: {sample}{suffix}")
 
-    # 8. Check coverage against ground truth
-    submission_ids = set(capture_ids)
-    unknown = submission_ids - gt_ids
-    missing = gt_ids - submission_ids
+    # 8. Check row count against ground truth (after dedup)
+    unique_ids = set(capture_ids)
+    if len(unique_ids) > len(gt_ids):
+        raise ValueError(
+            f"CSV has {len(unique_ids)} unique capture_ids. Max allowed is "
+            f"{len(gt_ids)} (unique capture_ids in ground truth)."
+        )
+
+    # 9. Check coverage against ground truth
+    unknown = unique_ids - gt_ids
+    missing = gt_ids - unique_ids
 
     if unknown:
         sample = sorted(unknown)[:3]
-        raise ValueError(
-            f"{len(unknown)} capture_ids not in ground truth: {sample}..."
-        )
+        raise ValueError(f"{len(unknown)} capture_ids not in ground truth: {sample}...")
 
     if missing:
-        matched = submission_ids & gt_ids
+        matched = unique_ids & gt_ids
         raise ValueError(
             f"{len(missing)} ground truth capture_ids missing from submission "
             f"({len(matched)}/{len(gt_ids)} coverage). "
