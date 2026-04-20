@@ -51,7 +51,7 @@ def _validate_names(paths: list[Path], split: Split, category: Category) -> None
             )
         seen.add(idx)
     expected_count = EXPECTED_COUNTS[category]
-    expected_indices = set(range(1, expected_count + 1))
+    expected_indices = set(range(0, expected_count))
     if seen != expected_indices:
         missing = sorted(expected_indices - seen)
         extra = sorted(seen - expected_indices)
